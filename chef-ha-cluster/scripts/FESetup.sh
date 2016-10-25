@@ -23,20 +23,18 @@ apt-get install -y chef-server-core chef-manage
 curl -o /etc/opscode/chef-server.rb "$1/chef-server.rb.`hostname`$2"
 
 cat >> /etc/opscode/chef-server.rb <<EOF
-opscode_erchef['s3_url_expiry_window_size'] = '100%'
-license['nodes'] = 999999
-oc_chef_authz['http_init_count'] = 100
+oc_chef_authz['http_init_count'] = 25
 oc_chef_authz['http_max_count'] = 100
-oc_chef_authz['http_queue_max'] = 200
+oc_chef_authz['http_queue_max'] = 0
 oc_bifrost['db_pool_size'] = 20
 oc_bifrost['db_pool_queue_max'] = 40
-oc_bifrost['db_pooler_timeout'] = 2000
+oc_bifrost['db_pooler_timeout'] = 0
 opscode_erchef['depsolver_worker_count'] = 4
-opscode_erchef['depsolver_timeout'] = 20000
+opscode_erchef['depsolver_timeout'] = 2000
 opscode_erchef['db_pool_size'] = 20
 opscode_erchef['db_pool_queue_max'] = 40
-opscode_erchef['db_pooler_timeout'] = 2000
-opscode_erchef['authz_pooler_timeout'] = 2000
+opscode_erchef['db_pooler_timeout'] = 0
+opscode_erchef['authz_pooler_timeout'] = 0
 EOF
 
 curl -o /etc/opscode/private-chef-secrets.json "$1/private-chef-secrets.json$2"

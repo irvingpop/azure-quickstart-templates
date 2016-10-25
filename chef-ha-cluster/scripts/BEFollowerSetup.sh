@@ -23,11 +23,11 @@ apt-get install -y chef-backend
 IPADRESS=`ifconfig eth0 | awk '/inet addr/{print substr($2,6)}'`
 cat > /etc/chef-backend/chef-backend.rb <<EOF
 publish_address '${IPADRESS}'
-etcd.heartbeat_interval = 500
-etcd.election_timeout = 5000
-etcd.snapshot_count = 5000
+etcd.heartbeat_interval = 100
+etcd.election_timeout = 1000
+etcd.snapshot_count = 10000
 postgresql.log_min_duration_statement = 500
-elasticsearch.heap_size = 3500
+elasticsearch.heap_size = 1024
 EOF
 
 chef-backend-ctl join-cluster 10.0.0.10 -s chef-backend-secrets.json --accept-license --yes --verbose --quiet
