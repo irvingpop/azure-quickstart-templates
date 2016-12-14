@@ -43,11 +43,11 @@ This template also uses blob storage to share secrets and configuration template
 Connect using ssh
 To reach a frontend use port 50000,50001,50002 (FE0,1,2):
 ```
-ssh -p 50000 chefadmin@yourhost.youregion.cloudapp.azure.com
+ssh -p 50000 ubuntu@yourdns.westus.cloudapp.azure.com
 ```
 To reach a backend do something like
 ```
-ssh -o ProxyCommand="ssh -W %h:%p -p 50000 -q chefadmin@yourhost.youregion.cloudapp.azure.com" chefadmin@be0
+ssh -o ProxyCommand="ssh -W %h:%p -p 50000 -q ubuntu@yourdns.westus.cloudapp.azure.com" ubuntu@be0
 ```
 
 #### Management
