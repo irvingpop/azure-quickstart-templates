@@ -171,15 +171,12 @@
     "chefbeName": "[concat('chefbe', uniqueString(resourceGroup().id))]",
     "ChefFEAvailName": "FEAvail",
     "cheffeName": "[concat('cheffe', uniqueString(resourceGroup().id))]",
-    "FE0setupscriptScriptFileName": "FE0Setup.sh",
-    "FEsetupscriptScriptFileName": "FESetup.sh",
+    "SetupScriptFileName": "ChefHaClusterSetup.sh",
     "FEStorageAccountContainerName": "vhds",
-    "FollowerSetupScriptFileName": "BEFollowerSetup.sh",
     "frontEndIPConfigID": "[concat(variables('lbID'), '/frontendIPConfigurations/loadBalancerFrontEnd')]",
     "imageReference": "[variables('osType')]",
     "lbID": "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
     "lbProbeID": "[concat(variables('lbID'),'/probes/https')]",
-    "LeaderSetupScriptFileName": "BELeaderSetup.sh",
     "loadBalancerName": "cheffelb",
     "location": "[resourceGroup().location]",
     "natPoolName": "chefnatpool",
@@ -517,11 +514,11 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
               "fileUris": [
-                "[concat(parameters('_artifactsLocation'), '/', variables('LeaderSetupScriptFileName'), parameters('_artifactsLocationSasToken'))]"
+                "[concat(parameters('_artifactsLocation'), '/', variables('SetupScriptFileName'), parameters('_artifactsLocationSasToken'))]"
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('sh ', variables('LeaderSetupScriptFileName'), ' \"', parameters('_secretsLocation'), '\" \"', parameters('_secretsLocationSasToken'), '\"')]"
+              "commandToExecute": "[concat('bash -ex ', variables('SetupScriptFileName'), ' --role backend --leader true --secrets-location \"', parameters('_secretsLocation'), '\" --sas-token \"', parameters('_secretsLocationSasToken'), '\"', ' >> /var/log/setup.log 2>&1')]"
             }
           }
         }
@@ -629,11 +626,11 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
               "fileUris": [
-                "[concat(parameters('_artifactsLocation'), '/', variables('FollowerSetupScriptFileName'), parameters('_artifactsLocationSasToken'))]"
+                "[concat(parameters('_artifactsLocation'), '/', variables('SetupScriptFileName'), parameters('_artifactsLocationSasToken'))]"
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('sh ', variables('FollowerSetupScriptFileName'), ' \"', parameters('_secretsLocation'), '\" \"', parameters('_secretsLocationSasToken'), '\"')]"
+              "commandToExecute": "[concat('bash -ex ', variables('SetupScriptFileName'), ' --role backend --leader false --secrets-location \"', parameters('_secretsLocation'), '\" --sas-token \"', parameters('_secretsLocationSasToken'), '\"', ' >> /var/log/setup.log 2>&1')]"
             }
           }
         }
@@ -742,11 +739,11 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
               "fileUris": [
-                "[concat(parameters('_artifactsLocation'), '/', variables('FollowerSetupScriptFileName'), parameters('_artifactsLocationSasToken'))]"
+                "[concat(parameters('_artifactsLocation'), '/', variables('SetupScriptFileName'), parameters('_artifactsLocationSasToken'))]"
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('sh ', variables('FollowerSetupScriptFileName'), ' \"', parameters('_secretsLocation'), '\" \"', parameters('_secretsLocationSasToken'), '\"')]"
+              "commandToExecute": "[concat('bash -ex ', variables('SetupScriptFileName'), ' --role backend --leader false --secrets-location \"', parameters('_secretsLocation'), '\" --sas-token \"', parameters('_secretsLocationSasToken'), '\"', ' >> /var/log/setup.log 2>&1')]"
             }
           }
         }
@@ -867,11 +864,11 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
               "fileUris": [
-                "[concat(parameters('_artifactsLocation'), '/', variables('FE0setupscriptScriptFileName'), parameters('_artifactsLocationSasToken'))]"
+                "[concat(parameters('_artifactsLocation'), '/', variables('SetupScriptFileName'), parameters('_artifactsLocationSasToken'))]"
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('sh ', variables('FE0setupscriptScriptFileName'), ' \"', parameters('_secretsLocation'), '\" \"', parameters('_secretsLocationSasToken'), '\"')]"
+              "commandToExecute": "[concat('bash -ex ', variables('SetupScriptFileName'), ' --role frontend --leader true --secrets-location \"', parameters('_secretsLocation'), '\" --sas-token \"', parameters('_secretsLocationSasToken'), '\"', ' >> /var/log/setup.log 2>&1')]"
             }
           }
         }
@@ -990,11 +987,11 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
               "fileUris": [
-                "[concat(parameters('_artifactsLocation'), '/', variables('FEsetupscriptScriptFileName'), parameters('_artifactsLocationSasToken'))]"
+                "[concat(parameters('_artifactsLocation'), '/', variables('SetupScriptFileName'), parameters('_artifactsLocationSasToken'))]"
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('sh ', variables('FEsetupscriptScriptFileName'), ' \"', parameters('_secretsLocation'), '\" \"', parameters('_secretsLocationSasToken'), '\"')]"
+              "commandToExecute": "[concat('bash -ex ', variables('SetupScriptFileName'), ' --role frontend --leader false --secrets-location \"', parameters('_secretsLocation'), '\" --sas-token \"', parameters('_secretsLocationSasToken'), '\"', ' >> /var/log/setup.log 2>&1')]"
             }
           }
         }
@@ -1113,11 +1110,11 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
               "fileUris": [
-                "[concat(parameters('_artifactsLocation'), '/', variables('FEsetupscriptScriptFileName'), parameters('_artifactsLocationSasToken'))]"
+                "[concat(parameters('_artifactsLocation'), '/', variables('SetupScriptFileName'), parameters('_artifactsLocationSasToken'))]"
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[concat('sh ', variables('FEsetupscriptScriptFileName'), ' \"', parameters('_secretsLocation'), '\" \"', parameters('_secretsLocationSasToken'), '\"')]"
+              "commandToExecute": "[concat('bash -ex ', variables('SetupScriptFileName'), ' --role frontend --leader false --secrets-location \"', parameters('_secretsLocation'), '\" --sas-token \"', parameters('_secretsLocationSasToken'), '\"', ' >> /var/log/setup.log 2>&1')]"
             }
           }
         }
