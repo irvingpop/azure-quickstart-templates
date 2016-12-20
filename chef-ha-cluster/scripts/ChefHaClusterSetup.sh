@@ -66,6 +66,63 @@ backend_format_disk () {
   mkfs.xfs /dev/chef-vg/chef-lv
   mkdir -p /var/opt/chef-backend
   mount /dev/chef-vg/chef-lv /var/opt/chef-backend
+  # remove the cloud-init added /mnt mountpoint from fstab
+  sed -i 's/\/dev\/disk\/cloud\/azure_resource-part1.*//' /etc/fstab
+  # but don't add the new ephemeral mount because we don't expect it to be there upon reboot
+}
+
+backend_format_disk_zfs () {
+  apt-get install zfs sysstat atop ntp -y
+
+  # Mount the local SSD volume (215 GB on a D3v2)
+  MNT_MOUNTED=`grep \/mnt /proc/mount || /bin/true`
+  if [ -n "${MNT_MOUNTED}" ]; then
+    umount -f /mnt
+  fi
+  zpool create ssd-data /dev/sdb -f
+  mkdir -p /var/opt/chef-backend
+  zfs create -o mountpoint=/var/opt/chef-backend ssd-data/chef
+  # remove the cloud-init added /mnt mountpoint from fstab
+  sed -i 's/\/dev\/disk\/cloud\/azure_resource-part1.*//' /etc/fstab
+  # but don't add the new ephemeral mount because we don't expect it to be there upon reboot
+}
+
+# Further ZFS tuning reading:
+# http://www.slideshare.net/fuzzycz/postgresql-on-ext4-xfs-btrfs-and-zfs
+# https://www.joyent.com/blog/bruning-questions-zfs-record-size
+
+# command to sync local-ssd to persistent-data:
+#   zfs snapshot -r ssd-data/chef@snap1
+#   send a full snapshot:
+#     zfs send ssd-data/chef@snap1 | gzip | curl --data-raw - "${SECRETS_LOCATION}/be0/snap-full${SAS_TOKEN}" --header "x-ms-blob-type: BlockBlob"
+#   send an incremental snapshot
+#     zfs send -I ssd-data/chef@snap1 ssd-data/chef@snap2 | gzip | curl --data-raw - "${SECRETS_LOCATION}/be0/snap-full${SAS_TOKEN}" --header "x-ms-blob-type: BlockBlob"
+#   TODO: schedule this to run on a time-period (daily full, incremental every 15 minutes?)
+#
+# and vice-versa for restores onto a new machine
+#   curl "${SECRETS_LOCATION}/be0/snap-full${SAS_TOKEN}" --header "x-ms-blob-type: BlockBlob" | gzip -d | zfs receive ssd-data/chef
+#   ... and then repeat for every incremental up until the latest
+#
+# TODO:  look into adapting z3 for use with Azure blob store: https://github.com/PressLabs/z3
+#       Python library for azure-storage: https://github.com/Azure/azure-storage-python
+
+
+# NOTE: btrfs is here for reference, but in practice is massively slower than XFS and ZFS
+#  with default mount options, pgbench shows a 50% decrease in TPS and a 100% increase in average latency
+#    see: https://blog.pgaddict.com/posts/friends-dont-let-friends-use-btrfs-for-oltp
+#  using `nodatacow` also disables `nodatasum` which greatly reduces the benefits.
+#    also, performance is still 75% of XFS and 150% higher average latency
+backend_format_disk_btrfs () {
+  apt-get install btrfs-tools sysstat atop ntp -y
+
+  # Mount the local SSD volume (215 GB on a D3v2)
+  MNT_MOUNTED=`grep \/mnt /proc/mount || /bin/true`
+  if [ -n "${MNT_MOUNTED}" ]; then
+    umount -f /mnt
+  fi
+  mkfs.btrfs -f /dev/sdb1
+  mkdir -p /var/opt/chef-backend
+  mount /dev/sdb1 /var/opt/chef-backend
 }
 
 frontend_format_disk () {
@@ -172,13 +229,13 @@ enable_monitoring () {
 backend_setup() {
   case $LEADER in
     true)
-      backend_format_disk
+      backend_format_disk_zfs
       backend_prepare_package
       backend_create_cluster
       backend_upload_secrets
     ;;
     false)
-      backend_format_disk
+      backend_format_disk_zfs
       backend_prepare_package
       backend_download_secrets
       backend_join_cluster
